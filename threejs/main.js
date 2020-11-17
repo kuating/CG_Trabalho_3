@@ -44,7 +44,7 @@ var stats;
 // Objects in Scene
 var sun, earth;
 // To be added 
-// var moon;   
+var moon;   
 // Light in the scene 
 var sunlight;
 
@@ -63,23 +63,34 @@ function init() {
     camera.lookAt( 0, 0, -4);
     
     
-
     // Setting up scene
     scene = new THREE.Scene();
+
+    // Moon
+    moon = createSphere(0.26, 20, 'texture/moon.jpg', 'Phong');
+    moon.name = "moon"
+    moon.position.z = -1;
+
     // Earth
-    earth = createSphere(1, 20, 'texture/earth.jpg', 'Phong');
+    earth = createSphere(0.4, 20, 'texture/earth.jpg', 'Phong');
+    earth.name = "earth"
     earth.position.z = -12;
+    earth.add(moon)
 
     // Sun (Sphere + Light)
-    sun = createSphere(1.25, 20, 'texture/sun.jpg');
+    sun = createSphere(2, 20, 'texture/sun.jpg');
+    sun.name="sun"
     sun.position.z = -3;
-    /* Complete: add light
-    sunlight...;
-    sun...
-    */
 
-    scene.add(earth);
+    sun.add(earth)
+
+    // Complete: add light
+    sunlight = new THREE.PointLight( 0xffffff, 1.5, 100 );
+    sunlight.position.set( 0, 0, 0 );
+    scene.add( sunlight );
+
     scene.add(sun);
+
 
     
     // Adding both renderer and stats to the Web page, also adjusting OrbitControls
@@ -120,10 +131,11 @@ function animate() {
 	// required if controls.enableDamping or controls.autoRotate are set to true
 	controls.update();
 
-    stats.update();
-    renderer.render( scene, camera );
-    earth.rotation.y+=0.02
-    
+    //inserir uma rotação de -20 na lua em torno da terra
+
+    moon.rotation.y-=0.05
+    earth.rotation.y+=0.25
+    sun.rotation.y+=0.005
 
 }
 
