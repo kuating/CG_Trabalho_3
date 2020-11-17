@@ -50,7 +50,6 @@ var sunlight;
 
 
 function init() {
-
     // Setting up renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     window.addEventListener('resize', onWindowResize, false);
@@ -68,18 +67,15 @@ function init() {
 
     // Moon
     moon = createSphere(0.26, 20, 'texture/moon.jpg', 'Phong');
-    moon.name = "moon"
     moon.position.z = -1;
 
     // Earth
     earth = createSphere(0.4, 20, 'texture/earth.jpg', 'Phong');
-    earth.name = "earth"
     earth.position.z = -12;
     earth.add(moon)
 
     // Sun (Sphere + Light)
     sun = createSphere(2, 20, 'texture/sun.jpg');
-    sun.name="sun"
     sun.position.z = -3;
 
     sun.add(earth)
@@ -87,8 +83,8 @@ function init() {
     // Complete: add light
     sunlight = new THREE.PointLight( 0xffffff, 1.5, 100 );
     sunlight.position.set( 0, 0, 0 );
-    scene.add( sunlight );
 
+    scene.add( sunlight );
     scene.add(sun);
 
 
@@ -121,23 +117,24 @@ function onWindowResize() {
 }
 
 function onDocumentKeyDown(event) {
-    console.log(event.which);
+    console.log("oi");
 }
 
 function animate() {
-    
     requestAnimationFrame( animate );
 
 	// required if controls.enableDamping or controls.autoRotate are set to true
 	controls.update();
 
     //inserir uma rotação de -20 na lua em torno da terra
-
+    stats.update();
+    renderer.render( scene, camera );
     moon.rotation.y-=0.05
     earth.rotation.y+=0.25
     sun.rotation.y+=0.005
 
 }
+
 
 init();
 animate();
