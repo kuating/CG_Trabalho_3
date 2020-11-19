@@ -48,6 +48,14 @@ var moon;
 // Light in the scene
 var sunlight;
 
+// The time (in seconds) it takes for the Earth to finish 1 translation cycle
+const earth_translation_time = 10;
+
+var earth_trans_speed;
+var earth_rot_speed;
+var moon_trans_speed;
+var moon_rot_speed;
+
 
 function init() {
     // Setting up renderer
@@ -76,18 +84,24 @@ function init() {
 
     // Sun (Sphere + Light)
     sun = createSphere(2, 20, 'texture/sun.jpg');
-    sun.position.z = -3;
+    sun.position.z = 0;
 
     sun.add(earth)
 
     // Complete: add light
     sunlight = new THREE.PointLight( 0xffffff, 1.5, 100 );
-    sunlight.position.set( 0, 0, 0 );
+    sun.add( sunlight );
 
-    scene.add( sunlight );
     scene.add(sun);
 
+    let earth_pos = new THREE.Vector3(earth.position.x, earth.position.y, earth.position.z);
+    let sun_pos = new THREE.Vector3(sun.position.x, sun.position.y, sun.position.z);
+    const earth_to_sun_distance = (earth_pos.sub(sun_pos)).length();
 
+    earth_trans_speed = 2 * Math.PI  / earth_translation_time; // angular velocity
+    earth_rot_speed = earth_trans_speed * 365;
+    moon_trans_speed = 0.06;
+    moon_rot_speed = moon_trans_speed;
 
     // Adding both renderer and stats to the Web page, also adjusting OrbitControls
     stats = new Stats();
@@ -117,20 +131,19 @@ function onWindowResize() {
 }
 
 function onDocumentKeyDown(event) {
-    console.log("oi");
 }
 
-const origin = new THREE.Vector3(0,0,0);
 const axis = new THREE.Vector3(0,1,0);
 
-const earth_rot_speed = -0.1;
-const earth_trans_speed = 0.002;
-const moon_trans_speed = 0.06;
-const moon_rot_speed = moon_trans_speed;
+var last_time = 0;
+var dt = 0;
+function animate(time = 0) {
+    dt = (time - last_time) / 1000;
+    last_time = time;
 
-function animate() {
+    // var origin = new THREE.Vector3(sun.position.x, sun.position.y, sun.position.z);
+    var origin = new THREE.Vector3(0, 0, 0);
 
-    requestAnimationFrame( animate );
 
 	// required if controls.enableDamping or controls.autoRotate are set to true
 	controls.update();
@@ -139,15 +152,18 @@ function animate() {
     renderer.render( scene, camera );
 
     //Earth's translation
-    earth.rotateAroundPoint(origin, earth_trans_speed, axis);
+    var value = earth_trans_speed * dt;
+    earth.rotateAroundPoint(origin, value, axis);
 
     //cancelling out the change in Earth's orientation that comes with the above
-    earth.rotation.y += earth_rot_speed - earth_trans_speed;
+    // earth.rotateY(earth_rot_speed - earth_trans_speed);
 
     //Earth's Rotation
-    //earth.rotation.y +=  earth_rot_speed;
+    // earth.rotateY(earth_rot_speed);
 
-
+    // this prints the time in seconds % cycle time
+    // console.log(((time/1000) % earth_translation_time).toFixed(2));
+    requestAnimationFrame( animate );
 }
 
 
