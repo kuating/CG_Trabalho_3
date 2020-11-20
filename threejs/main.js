@@ -49,7 +49,7 @@ var moon;
 var sunlight;
 
 // The time (in seconds) it takes for the Earth to finish 1 translation cycle
-const earth_translation_time = 10;
+const earth_translation_time = 80;
 
 var earth_trans_speed;
 var earth_rot_speed;
@@ -72,6 +72,10 @@ function init() {
 
     // Setting up scene
     scene = new THREE.Scene();
+
+    // Setting up background
+    skybox = createSphere(160,20, 'texture/skybox.jpg','SkyBox');
+    scene.add(skybox);
 
     // Moon
     moon = createSphere(0.26, 20, 'texture/moon.jpg', 'Phong');
@@ -98,10 +102,10 @@ function init() {
     let sun_pos = new THREE.Vector3(sun.position.x, sun.position.y, sun.position.z);
     const earth_to_sun_distance = (earth_pos.sub(sun_pos)).length();
 
-    earth_trans_speed = 2 * Math.PI  / earth_translation_time; // angular velocity
+    earth_trans_speed = 2 * Math.PI / earth_translation_time; // angular velocity
     earth_rot_speed = earth_trans_speed * 365;
-    moon_trans_speed = 0.06;
-    moon_rot_speed = moon_trans_speed;
+    moon_trans_speed = - earth_rot_speed / 30;
+    moon_rot_speed = earth_rot_speed / 30;
 
     // Adding both renderer and stats to the Web page, also adjusting OrbitControls
     stats = new Stats();
@@ -155,11 +159,23 @@ function animate(time = 0) {
     var value = earth_trans_speed * dt;
     earth.rotateAroundPoint(origin, value, axis);
 
-    //cancelling out the change in Earth's orientation that comes with the above
-    // earth.rotateY(earth_rot_speed - earth_trans_speed);
+    //Cancelling out the change in Earth's orientation that comes with the above
+    earth.rotateY(- earth_trans_speed * dt);
 
-    //Earth's Rotation
-    // earth.rotateY(earth_rot_speed);
+    //Earth's rotation
+    earth.rotateY(earth_rot_speed * dt);
+
+    //Cancelling out earth's rotation on moon's translation
+    moon.rotateAroundPoint(origin, -(earth_rot_speed)*dt, axis);
+
+    //Moon's translation
+    moon.rotateAroundPoint(origin, moon_trans_speed*dt, axis);
+
+    //Cancelling out moon's translation on moon's rotation
+    moon.rotateY(-moon_trans_speed*dt);
+
+    //Moon's rotation
+    moon.rotateY(moon_rot_speed*dt);
 
     // this prints the time in seconds % cycle time
     // console.log(((time/1000) % earth_translation_time).toFixed(2));
@@ -178,6 +194,12 @@ function createSphere(radius, segments, texture_path, type = 'Basic') {
     if(type == 'Phong') {
         var sphMaterial = new THREE.MeshPhongMaterial({
             map: texture
+        });
+    }
+    else if(type == 'SkyBox') {
+        var sphMaterial = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide
         });
     }
     else {
